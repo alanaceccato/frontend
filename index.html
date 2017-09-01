@@ -121,23 +121,19 @@
 			</ul>
 		</div>
 		<div id="corpoItems" class="container-fluid paddingInicial" style="padding:3px;"></div>
-		<div id="confirmaCompra" class="modal fade" tabindex="-1" role="dialog">
-		  <div class="modal-dialog" role="document">
-		    <div class="modal-content">
-		      <div class="modal-header">
-		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-		        <h4 class="modal-title">Modal title</h4>
-		      </div>
-		      <div class="modal-body">
-		        <p>One fine body&hellip;</p>
-		      </div>
-		      <div class="modal-footer">
-		        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-		        <button type="button" class="btn btn-primary">Save changes</button>
-		      </div>
-		    </div><!-- /.modal-content -->
-		  </div><!-- /.modal-dialog -->
-		</div><!-- /.modal -->
+			<div class="modal fade" id="confirmaCompra" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-sm" style="z-index: 9999;">
+					<div class="modal-content">
+						<!-- <div class="modal-header" id="modalMsgHeader"></div> -->
+						<div class="modal-body text-center" id="modalMsgBody"></div>
+						<div class="modal-footer" style="text-align:center !important">
+							<input type="hidden" id="indiceItem" value=""/>
+							<button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+							<button type="button" class="btn btn-success" onclick="addCarrinho()">Adicionar</button>
+						</div>
+					</div>
+				</div>
+			</div>
 		<script>
 
 		$(document).ready(function(){
@@ -150,6 +146,8 @@
 			$("#dropCarrinho").toggleClass("hidden");
 		}
 
+		 // Foi acrescentado o atributo alias, pois os id`s da Câmera e desse produto, são iguais, com isso não conseguiria diferenciar qual produto o cliente está colocando no carrinho. O correto seria identificar apenas pelo ID que seria uma chave única, porém como neste caso ela se repete, precisei adequar o JSON para o funcionamento correto do projeto.
+		 // Foi retirado algumas imagens dos produtos Iphone e Smart TV, pois as mesmas não estavam sendo encontradas.
 		var items = [
 		        {
 		            "product": {
@@ -259,12 +257,12 @@
 				template += '						<span class="formatFont visible-md visible-lg" style="color:#22b14c;font-size:12px;">'+obj.product.price.installments+'x R$</span><span class="formatFont  visible-md visible-lg" style="color:#22b14c;font-size:15px;"> '+obj.product.price.installmentValue+'</span>';
 				template += '					</div>';
 				template += '					<div class="col-xs-3 col-sm-7 col-md-3 col-lg-7 text-left no-padding">';
-				template += '						<span class="fa-stack fa-sm visible-xs visible-md" onclick="addCarrinho('+indice+')">';
+				template += '						<span class="fa-stack fa-sm visible-xs visible-md" onclick="showCarrinho('+indice+')">';
 				template += '						  <i style="color:#fff;border:solid 1px #ddd;border-radius:50%;" class="fa fa-circle fa-stack-2x"></i>';
 				template += '						  <i class="fa fa-cart-plus fa-stack-1x"></i>';
 				template += '						</span>';
-				template += '						<button onclick="addCarrinho('+indice+')" style="width:120px !important;font-size:10px;margin-top:5px;background-color:#22b14c !important;color:#fff" type="button" class="btn btn-xs visible-lg">Adicionar ao carrinho <i class="fa fa-angle-right" aria-hidden="true"></i></button>';
-				template += '						<button onclick="addCarrinho('+indice+')" style="width:110px !important;font-size:10px;margin-top:5px;background-color:#22b14c !important;color:#fff" type="button" class="btn btn-xs visible-sm">Adicionar ao carrinho <i class="fa fa-angle-right" aria-hidden="true"></i></button>';
+				template += '						<button onclick="showCarrinho('+indice+')" style="width:120px !important;font-size:10px;margin-top:5px;background-color:#22b14c !important;color:#fff" type="button" class="btn btn-xs visible-lg">Adicionar ao carrinho <i class="fa fa-angle-right" aria-hidden="true"></i></button>';
+				template += '						<button onclick="showCarrinho('+indice+')" style="width:110px !important;font-size:10px;margin-top:5px;background-color:#22b14c !important;color:#fff" type="button" class="btn btn-xs visible-sm">Adicionar ao carrinho <i class="fa fa-angle-right" aria-hidden="true"></i></button>';
 				template += '					</div>';
 				template += '				</div>';
 				template += '				<div class="col-xs-12 col-sm-12 col-md-12 no-padding" style="padding-left: 0px !important">';
@@ -282,7 +280,17 @@
 				return template;
 		}
 
-		function addCarrinho(indice){
+		function showCarrinho( indice ){
+			$("#modalMsgBody").html("Deseja adicionar o item <b>" + items[indice].product.name + "</b> em seu carrinho?" );
+			$("#confirmaCompra").modal("show");
+			
+			$("#indiceItem").val( indice );
+
+		}
+
+		function addCarrinho( ){
+
+			var indice = $("#indiceItem").val( );
 
 			var valorAtual = $("#totalCompra").html();
 				valorAtual = Math.round( parseFloat( valorAtual ) + parseFloat( items[indice].product.price.value ) );
@@ -297,6 +305,8 @@
 
 			$("#countCarrinho").removeClass("hidden");
 			$("#countCarrinho").html($( ".itemcarrinho li" ).length);
+
+			$("#confirmaCompra").modal("hide");
 
 		}
 
