@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html ng-app="plunker">
+
+  	<head>
+	    <title>Buscapé</title>
+
+	    <meta charset="utf-8" />
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+	    <meta name="apple-mobile-web-app-capable" content="yes">
+	    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+	    <meta content="" name="description" />
+	    <meta content="" name="author" />
+
+	    <!-- Latest compiled and minified CSS -->
+	    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+		<link rel="stylesheet" href="fontawesome/css/font-awesome.min.css">
+	    <!-- Optional theme -->
+	    <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
+	    
+	    <script src="jquery/jquery.min.js"></script>
+        <script src="bootstrap/js/bootstrap.min.js"></script>
+	 	<style>
+	 		.navbar-brand{
+	 			padding: 0px !important;
+	 		}
+
+	 		.no-padding{
+	 			padding: 0px !important;
+	 		}
+
+	 		.hide-bullets{
+    			list-style:none;
+	 		}
+
+	 		.paddingInicial{
+	 			padding-top: 50px !important;
+	 		}
+
+	 		.carrinho {
+			    position: absolute;
+			    right: 0;
+			    z-index: 1000;
+			    float: left;
+			    padding: 5px 0;
+			    font-size: 14px;
+			    text-align: left;
+			    list-style: none;
+			    background-color: #fff;
+			    border: 1px solid #ccc;
+			    border: 1px solid rgba(0,0,0,.15);
+			}
+
+	 		.carrousel {
+			    position: absolute;
+			    left: 10px;
+			    z-index: 999;
+			    float: left;
+			    padding: 5px 0;
+			    font-size: 14px;
+			    text-align: left;
+			    list-style: none;
+			}
+
+			.center{
+				display:flex!important;
+				justify-content:left!important; 
+				align-items:center!important; 
+			}
+
+			.formatFont{
+				font-family: Arial;
+			}
+
+			.alturaPanel{
+				min-height: 130px;
+			}
+
+			.ellipsis {
+			    overflow: hidden;
+			    max-height: 60px;
+			    text-overflow: ellipsis;
+  				/*white-space: nowrap;*/
+			}
+
+			.formatBadge{
+				background-color:#d62a33;
+				position: absolute;
+				top:25px;
+				right: 15px;
+			}
+
+	 	</style>
+	</head>
+	<body style="background-color:#f3f3f3">
+		<nav class="navbar navbar-default navbar-fixed-top" style="background: #ffcd00 !important;margin-bottom:0px;"> 
+			<span class="fa fa-bars pull-right" style="font-size:22px;margin-top:12px;padding-right:5px" onclick="showDrop()"></span>
+			<span id="countCarrinho" class="badge formatBadge hidden"></span>
+			<a href="#" class="navbar-brand">
+				<img alt="Buscapé" src="img/logo-buscape.png" class="img-responsive">
+			</a> 
+		</nav>
+		<div id="dropCarrinho" class="col-xs-12 col-sm-6 col-md-6 pull-right hidden paddingInicial" style="padding-left: 0px !important">
+			<ul class="carrinho" style="background-color:#daaf00;width:100%">
+				 <li class="semItem">
+					<div class="col-sm-12 col-xs-12 text-center" style="margin-top:10px !important;">
+				    	<span class="formatFont" style="font-weight:bold">Você ainda não possui itens no seu carrinho!</span>
+				    </div>
+			    </li>
+			    <li id="totalCarrinho" class="itemcarrinho hidden">
+					<div class="col-sm-12 col-xs-12 text-right" style="margin-top:10px !important;">
+				    	<span class="formatFont" >subtotal</span>
+				    	<hr style="margin:0;border-top: 1px solid #000"/>
+				    </div>
+					<div class="col-sm-12 col-xs-12 text-right">
+				    	<span class="formatFont">10x R$ <span id="parcelaCompra">0</span></span>
+				    </div>
+					<div class="col-sm-12 col-xs-12 text-right" >
+				    	<span class="formatFont">ou R$ <span id="totalCompra">0</span> á vista</span>
+				    </div>
+			    </li>
+			</ul>
+		</div>
+		<div id="corpoItems" class="container-fluid paddingInicial" style="padding:3px;"></div>
+		<div id="confirmaCompra" class="modal fade" tabindex="-1" role="dialog">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		        <h4 class="modal-title">Modal title</h4>
+		      </div>
+		      <div class="modal-body">
+		        <p>One fine body&hellip;</p>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		        <button type="button" class="btn btn-primary">Save changes</button>
+		      </div>
+		    </div><!-- /.modal-content -->
+		  </div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		<script>
+
+		$(document).ready(function(){
+				
+			listItems();
+
+	  	});
+
+		function showDrop(){
+			$("#dropCarrinho").toggleClass("hidden");
+		}
+
+		 // Foi acrescentado o atributo alias, pois os id`s da Câmera e desse produto, são iguais, com isso não conseguiria diferenciar qual produto o cliente está colocando no carrinho. O correto seria identificar apenas pelo ID que seria uma chave única, porém como neste caso ela se repete, precisei adequar o JSON para o funcionamento correto do projeto.
+		 // Foi retirado algumas imagens dos produtos Iphone e Smart TV, pois as mesmas não estavam sendo encontradas.
+		var items = [
+		        {
+		            "product": {
+		                "id": 2321312,
+		                "alias": "smartphone_2321312",
+		                "name": "Smartphone Apple iPhone 7 128GB",
+		                "images": [
+		                    "http://thumbs.buscape.com.br/celular-e-smartphone/smartphone-apple-iphone-7-128gb_600x600-PU98460_1.jpg",
+		                    "http://thumbs.buscape.com.br/celular-e-smartphone/smartphone-apple-iphone-7-128gb/__200x400-PU98460_2_c.jpg?v=2347575274",
+		                    "http://thumbs.buscape.com.br/celular-e-smartphone/smartphone-apple-iphone-7-128gb/__200x400-PU98460_3_c.jpg?v=318433138",
+		                    "http://thumbs.buscape.com.br/celular-e-smartphone/smartphone-apple-iphone-7-128gb/__200x400-PU98460_4_c.jpg?v=33273730"
+		                    
+		                ],
+		                "price": {
+		                    "value": 3509.10,
+		                    "installments": 10,
+		                    "installmentValue": 389.90
+		                }
+		            }
+		        },
+		        {
+		            "product": {
+		                "id": 9971,
+		                "alias": "smart_9971",
+		                "name": "Smart TV Samsung Série 4 UN32J4300AG 32 polegadas LED Plana",
+		                "images": [
+		                    "http://mthumbs.buscape.com.br/tv/smart-tv-samsung-serie-4-un32j4300ag-32-polegadas-led-plana_600x600-PU95547_1.jpg",
+		                    "http://thumbs.buscape.com.br/__400x400-PU95547_2_c.jpg?v=3988579075",
+		                    "http://thumbs.buscape.com.br/__400x400-PU95547_4_c.jpg?v=4208003525"
+		                ],
+		                "price": {
+		                    "value": 1139.90,
+		                    "installments": 10,
+		                    "installmentValue": 134.11
+		                }
+		            }
+		        },
+		        {
+		            "product": {
+		                "id": 6717131,
+		                "alias": "camera_6717131",
+		                "name": "Câmera Digital Canon EOS Rebel T5i 18.0 Megapixels",
+		                "images": [
+		                    "http://mthumbs.buscape.com.br/camera-digital/canon-eos-rebel-t5i-18-0-megapixels_600x600-PU7bf7b_1.jpg"
+		                ],
+		                "price": {
+		                    "value": 1999.20,
+		                    "installments": 10,
+		                    "installmentValue": 235.20
+		                }
+		            }
+		        },
+		        {
+		            "product": {
+		                "id": 6717131,
+		                "alias": "lenovo_ipad_6717131",
+		                "name": "Lenovo IdeaPad 310 80UH0004BR Intel Core i7-6500U 2.5 GHz 8192 MB 1024 GB",
+		                "images": [
+		                    "http://mthumbs.buscape.com.br/notebook/lenovo-ideapad-310-80uh0004br-intel-core-i7-6500u-2-5-ghz-8192-mb-1024-gb_600x600-PU98e6e_1.jpg"
+		                ],
+		                "price": {
+		                    "value": 2599.00,
+		                    "installments": 10,
+		                    "installmentValue": 259.90
+		                }
+		            }
+		        }
+		    ]
+
+		function listItems(){
+			
+			for( var i = 0; i < items.length; i ++ ){
+
+				$("#corpoItems").append(templateList( items[i], i ));
+
+			}
+
+
+		}
+
+		function templateList( obj, indice ){
+			var template = "";
+				template += '<div id="'+obj.product.alias+'" class="col-sm-6 col-md-4"  style="padding:1px;">';
+				template += '	<div class="panel panel-white no-radius text-center" style="margin-bottom:5px !important;">';
+				template += '		<div class="panel-body no-padding alturaPanel">';
+				template += '			<div class="col-sm-6 col-xs-6 no-padding" style="padding-right:20px !important;">';
+				template += '				<ul class="carrousel pull-left">';
+				for( var x = 0; x < obj.product.images.length; x ++ ){
+					template += '				    <li style="padding:1px;" onclick="changeImage('+x+','+indice+')">';
+					template += '				    	<img style="border:solid 1px #ddd;padding:2px;height:28px !important" alt="" src="' + obj.product.images[x] + '" width="15%">';
+					template += '				    </li>';
+				}
+				template += '				</ul>';
+				template += '				<img id="imgProduto_'+indice+'" style="height:100px !important" class="pull-right" alt="" src="' + obj.product.images[0] + '">';
+				template += '			</div>';
+				template += '			<div class="col-xs-6 col-sm-6 no-padding">';
+				template += '				<div class="col-xs-12 col-sm-12 col-md-12 text-left ellipsis" style="padding-left: 0px !important;">';
+				template += '					<span style="font-size:12px;color:#444444;">' + obj.product.name + '&nbsp<i style="color:#ffcd00" class="fa fa-heart-o" aria-hidden="true"></i></span>';
+				template += '				</div>';
+				template += '				<div class="col-xs-12 col-sm-12 col-md-12 text-center">';
+				template += '					<hr style="margin:5px;border-top: 1px solid #444444 !important;opacity: 0.1;"/>';
+				template += '				</div>';
+				template += '				<div class="col-xs-12 col-sm-12 col-md-12 no-padding" style="padding-left: 0px !important">';
+				template += '					<div class="col-xs-9 col-sm-5 col-md-9 col-lg-5 text-left no-padding center" style="padding-left: 0px !important;margin-top:5px;">';
+				template += '						<span class="formatFont visible-xs" style="color:#22b14c;font-size:11px;">'+obj.product.price.installments+'x R$</span><span class="formatFont visible-xs" style="color:#22b14c;font-size:13px;"> '+obj.product.price.installmentValue+'</span>';
+				template += '						<span class="formatFont visible-sm" style="color:#22b14c;font-size:11px;">'+obj.product.price.installments+'x R$</span><span class="formatFont visible-sm" style="color:#22b14c;font-size:13px;"> '+obj.product.price.installmentValue+'</span>';
+				template += '						<span class="formatFont visible-md visible-lg" style="color:#22b14c;font-size:12px;">'+obj.product.price.installments+'x R$</span><span class="formatFont  visible-md visible-lg" style="color:#22b14c;font-size:15px;"> '+obj.product.price.installmentValue+'</span>';
+				template += '					</div>';
+				template += '					<div class="col-xs-3 col-sm-7 col-md-3 col-lg-7 text-left no-padding">';
+				template += '						<span class="fa-stack fa-sm visible-xs visible-md" onclick="addCarrinho('+indice+')">';
+				template += '						  <i style="color:#fff;border:solid 1px #ddd;border-radius:50%;" class="fa fa-circle fa-stack-2x"></i>';
+				template += '						  <i class="fa fa-cart-plus fa-stack-1x"></i>';
+				template += '						</span>';
+				template += '						<button onclick="addCarrinho('+indice+')" style="width:120px !important;font-size:10px;margin-top:5px;background-color:#22b14c !important;color:#fff" type="button" class="btn btn-xs visible-lg">Adicionar ao carrinho <i class="fa fa-angle-right" aria-hidden="true"></i></button>';
+				template += '						<button onclick="addCarrinho('+indice+')" style="width:110px !important;font-size:10px;margin-top:5px;background-color:#22b14c !important;color:#fff" type="button" class="btn btn-xs visible-sm">Adicionar ao carrinho <i class="fa fa-angle-right" aria-hidden="true"></i></button>';
+				template += '					</div>';
+				template += '				</div>';
+				template += '				<div class="col-xs-12 col-sm-12 col-md-12 no-padding" style="padding-left: 0px !important">';
+				template += '					<div class="col-xs-12 col-sm-12 col-md-12 text-left no-padding center" style="padding-left: 0px !important">';
+				template += '						<span class="formatFont visible-xs" style="color:#757575;font-size:10px;">ou&nbsp</span><span class="formatFont visible-xs" style="color:#757575;font-size:12px;"> R$ '+obj.product.price.value+'</span><span class="formatFont visible-xs" style="color:#000;font-size:10px;">&nbspá vista</span>';
+				template += '						<span class="formatFont visible-sm" style="color:#757575;font-size:10px;">ou&nbsp</span><span class="formatFont visible-sm" style="color:#757575;font-size:12px;"> R$ '+obj.product.price.value+'</span><span class="formatFont visible-sm" style="color:#000;font-size:10px;">&nbspá vista</span>';
+				template += '						<span class="formatFont visible-md visible-lg" style="color:#757575;font-size:12px;">ou&nbsp</span><span class="formatFont  visible-md visible-lg" style="color:#757575;font-size:15px;"> R$ '+obj.product.price.value+'</span><span class="formatFont  visible-md visible-lg" style="color:#000;font-size:12px;">&nbspá vista</span>';
+				template += '					</div>';
+				template += '				</div>';
+				template += '			</div>';
+				template += '		</div>';
+				template += '	</div>';
+				template += '</div>';
+
+				return template;
+		}
+
+		function addCarrinho(indice){
+
+			var valorAtual = $("#totalCompra").html();
+				valorAtual = Math.round( parseFloat( valorAtual ) + parseFloat( items[indice].product.price.value ) );
+			var valorParcelado = Math.round( valorAtual/10 );
+
+			$("#parcelaCompra").html( valorParcelado );
+			$("#totalCompra").html( valorAtual );
+
+			$(".itemcarrinho").prepend( templateCarrinho( items[indice], indice ) );
+			$(".semItem").addClass("hidden");
+			$("#totalCarrinho").removeClass("hidden");
+
+			$("#countCarrinho").removeClass("hidden");
+			$("#countCarrinho").html($( ".itemcarrinho li" ).length);
+
+		}
+
+		function changeImage(img, indice){
+
+			$("#imgProduto_"+indice).attr('src', items[indice].product.images[img] );
+
+		}
+
+		function removeCarrinho(alias, indice){
+
+			var valorAtual     = $("#totalCompra").html();
+				valorAtual     = Math.round( parseFloat( valorAtual ) - parseFloat( items[indice].product.price.value ) );
+			var valorParcelado = Math.round( valorAtual/10 );
+			$("#parcelaCompra").html( valorParcelado );
+			$("#totalCompra").html( valorAtual );
+
+			$("#"+alias).remove();
+
+			if( $( ".itemcarrinho li" ).length === 0 ){
+				$(".semItem").removeClass("hidden");
+				$("#totalCarrinho").addClass("hidden");
+				$("#countCarrinho").addClass("hidden");
+			}else{
+				$("#countCarrinho").removeClass("hidden");
+				$("#countCarrinho").html($( ".itemcarrinho li" ).length);
+			}
+		}
+
+		function templateCarrinho( obj, indice ){
+			var template = "";
+				template += '<li id="'+obj.product.alias+'">';
+			    template += '	<div class="col-sm-12 col-xs-12 text-center" style="margin-top:2px;background-color:#c49d00;padding:5px;">';
+				template += '    	<div class="col-sm-3 col-xs-3 text-center" style="height:100%;">';
+				template += '			<img  style="border: solid 1px #100d00" class="img-responsive" alt="" src="' + obj.product.images[0] + '">';
+				template += '		</div>';
+				template += '    	<div class="col-xs-8 col-sm-8">';
+				template += '			<div class="col-xs-12 col-sm-12 col-md-12 text-left  no-padding" style="padding-left:0px;">';
+				template += '				<span class="formatFont visible-xs" style="font-size:12px;color:white">' + obj.product.name + '</span>';
+				template += '				<span class="formatFont visible-sm" style="font-size:13px;color:white">' + obj.product.name + '</span>';
+				template += '				<span class="formatFont visible-md visible-lg" style="font-size:15px;color:white">' + obj.product.name + '</span>';
+				template += '			</div>';
+				template += '			<div class="col-xs-12 col-sm-12 col-md-12 text-left no-padding center" style="padding-left:0px;">';
+				template += '				<span class="formatFont visible-xs" style="color:#000;font-size:12px;">'+obj.product.price.installments+'x R$</span><span class="formatFont visible-xs" style="color:#000;font-size:15px;"> '+obj.product.price.installmentValue+'</span>';
+				template += '				<span class="formatFont visible-sm" style="color:#000;font-size:13px;">'+obj.product.price.installments+'x R$</span><span class="formatFont visible-sm" style="color:#000;font-size:15px;"> '+obj.product.price.installmentValue+'</span>';
+				template += '				<span class="formatFont visible-md visible-lg" style="color:#000;font-size:15px;">'+obj.product.price.installments+'x R$</span><span class="formatFont visible-md visible-lg" style="color:#000;font-size:15px;"> '+obj.product.price.installmentValue+'</span>';
+				template += '			</div>';
+				template += '			<div class="col-xs-12 col-sm-12 col-md-12 text-left no-padding center" style="padding-left:0px;">';
+				template += '				<span class="formatFont visible-xs" style="color:#000;font-size:12px;">ou&nbsp</span><span class="formatFont visible-xs" style="color:#000;font-size:13px;"> R$ '+obj.product.price.value+'</span><span class="formatFont visible-xs" style="color:#000;font-size:10px;">&nbspá vista</span>';
+				template += '				<span class="formatFont visible-sm" style="color:#000;font-size:12px;">ou&nbsp</span><span class="formatFont visible-sm" style="color:#000;font-size:13px;"> R$ '+obj.product.price.value+'</span><span class="formatFont visible-sm" style="color:#000;font-size:10px;">&nbspá vista</span>';
+				template += '				<span class="formatFont visible-md visible-lg" style="color:#000;font-size:12px;">ou&nbsp</span><span class="formatFont visible-md visible-lg" style="color:#000;font-size:13px;"> R$ '+obj.product.price.value+'</span><span class="formatFont visible-md visible-lg" style="color:#000;font-size:10px;">&nbspá vista</span>';
+				template += '			</div>';
+				template += '		</div>';
+				template += '    	<div class="col-sm-1 col-xs-1 text-center no-padding" style="" onclick="removeCarrinho(\''+obj.product.alias+'\', '+indice+')">';
+				template += '			<i class="fa fa-times" aria-hidden="true"></i>';
+				template += '		</div>';
+				template += '	</div>';
+			    template += '</li>';
+
+			return template;
+		}
+
+		</script>
+	</body>
+</html>
